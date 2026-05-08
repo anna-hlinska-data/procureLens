@@ -1,0 +1,121 @@
+version: '3.9'
+
+services:
+
+  # ── PostgreSQL Database ──────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: procurelens_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       procurelens
+      POSTGRES_USER:     procurelens
+      POSTGRES_PASSWORD: procurelens123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U procurelens -d procurelens"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (Celery broker) ────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: procurelens_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Django Backend ───────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: procurelens_backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://procurelens:procurelens123@postgres:5432/procurelens
+      REDIS_URL:    redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+      - ./frontend:/app/frontend          # risk_engine.py access
+      - static_files:/app/static
+      - media_files:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery Worker ────────────────────────────────────────────────────────
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: procurelens_celery
+    restart: unless-stopped
+    command: celery -A wfmonit worker --loglevel=info --concurrency=2
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://procurelens:procurelens123@postgres:5432/procurelens
+      REDIS_URL:    redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+      - ./frontend:/app/frontend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Streamlit Frontend ───────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: procurelens_frontend
+    restart: unless-stopped
+    environment:
+      DJANGO_API_URL: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - model_files:/app/models           # shared RF model volume
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+
+  # ── Nginx Reverse Proxy ──────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: procurelens_nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_files:/app/static
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  postgres_data:
+  static_files:
+  media_files:
+  model_files:
+
+networks:
+  default:
+    name: procurelens_network
