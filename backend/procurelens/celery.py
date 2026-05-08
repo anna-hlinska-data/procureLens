@@ -3,9 +3,9 @@ from celery import Celery
 from django.conf import settings
 
 # Set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wfmonit.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'procurelens.settings')
 
-app = Celery('wfmonit')
+app = Celery('procurelens')
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'wfmonit.urls'
+ROOT_URLCONF = 'procurelens.urls'
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'wfmonit.wsgi.application'
+WSGI_APPLICATION = 'procurelens.wsgi.application'
 
 # Database
 if config('DATABASE_URL', default=None):
@@ -81,7 +81,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'wfmonit_db',
+            'NAME': 'procurelens_db',
             'USER': 'postgres',
             'PASSWORD': 'REMOVED_DB_PASSWORD',
             'HOST': 'localhost',

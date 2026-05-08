@@ -65,7 +65,7 @@ services:
       dockerfile: Dockerfile
     container_name: procurelens_celery
     restart: unless-stopped
-    command: celery -A wfmonit worker --loglevel=info --concurrency=2
+    command: celery -A procurelens worker --loglevel=info --concurrency=2
     env_file: ./backend/.env
     environment:
       DATABASE_URL: postgresql://procurelens:procurelens123@postgres:5432/procurelens
