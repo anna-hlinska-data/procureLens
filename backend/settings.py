@@ -187,7 +187,7 @@ SIMPLE_JWT = {
 
 # Spectacular (Swagger) settings
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'WFMonit API',
+    'TITLE': 'ProcureLens API',
     'DESCRIPTION': 'Production-ready Django REST API with JWT authentication',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,

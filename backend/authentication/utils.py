@@ -32,7 +32,7 @@ def send_password_reset_email(user, token):
         <p>If you didn't request this, please ignore this email.</p>
         <p>This link will expire in 1 hour.</p>
         <br>
-        <p>Best regards,<br>WFMonit Team</p>
+        <p>Best regards,<br>ProcureLens Team</p>
     </body>
     </html>
     """
@@ -77,14 +77,14 @@ def send_verification_email(user):
     html_message = f"""
     <html>
     <body>
-        <h2>Welcome to WFMonit!</h2>
+        <h2>Welcome to ProcureLens!</h2>
         <p>Hello {user.get_full_name()},</p>
-        <p>Thank you for registering with WFMonit. Please click the link below to verify your email address:</p>
+        <p>Thank you for registering with ProcureLens. Please click the link below to verify your email address:</p>
         <p><a href="{verification_url}" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
         <p>If you didn't create an account, please ignore this email.</p>
         <p>This link will expire in 24 hours.</p>
         <br>
-        <p>Best regards,<br>WFMonit Team</p>
+        <p>Best regards,<br>ProcureLens Team</p>
     </body>
     </html>
     """
@@ -110,17 +110,17 @@ def send_verification_email(user):
 
 def send_welcome_email(user):
     """Send welcome email after successful verification"""
-    subject = 'Welcome to WFMonit!'
+    subject = 'Welcome to ProcureLens!'
     
     html_message = f"""
     <html>
     <body>
-        <h2>Welcome to WFMonit!</h2>
+        <h2>Welcome to ProcureLens!</h2>
         <p>Hello {user.get_full_name()},</p>
-        <p>Your email has been successfully verified. Welcome to WFMonit!</p>
+        <p>Your email has been successfully verified. Welcome to ProcureLens!</p>
         <p>You can now enjoy full access to all our features.</p>
         <br>
-        <p>Best regards,<br>WFMonit Team</p>
+        <p>Best regards,<br>ProcureLens Team</p>
     </body>
     </html>
     """
