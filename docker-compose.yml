@@ -7,16 +7,13 @@ services:
     image: postgres:15-alpine
     container_name: procurelens_db
     restart: unless-stopped
-    environment:
-      POSTGRES_DB:       procurelens
-      POSTGRES_USER:     procurelens
-      POSTGRES_PASSWORD: procurelens123
+    env_file: ./backend/.env              # POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U procurelens -d procurelens"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -42,9 +39,6 @@ services:
     container_name: procurelens_backend
     restart: unless-stopped
     env_file: ./backend/.env
-    environment:
-      DATABASE_URL: postgresql://procurelens:procurelens123@postgres:5432/procurelens
-      REDIS_URL:    redis://redis:6379/0
     volumes:
       - ./backend:/app
       - ./frontend:/app/frontend          # risk_engine.py access
@@ -67,9 +61,6 @@ services:
     restart: unless-stopped
     command: celery -A procurelens worker --loglevel=info --concurrency=2
     env_file: ./backend/.env
-    environment:
-      DATABASE_URL: postgresql://procurelens:procurelens123@postgres:5432/procurelens
-      REDIS_URL:    redis://redis:6379/0
     volumes:
       - ./backend:/app
       - ./frontend:/app/frontend
@@ -89,8 +80,7 @@ services:
     environment:
       DJANGO_API_URL: http://backend:8000
     volumes:
-      - ./frontend:/app
-      - model_files:/app/models           # shared RF model volume
+      - ./frontend:/app                   # includes models/rf_model.pkl
     ports:
       - "8501:8501"
     depends_on:
@@ -114,7 +104,6 @@ volumes:
   postgres_data:
   static_files:
   media_files:
-  model_files:
 
 networks:
   default:

@@ -2,6 +2,10 @@
 **AI-Powered Procurement Risk Detection System**
 Cardiff Metropolitan University · IST5001 · 2025/2026
 
+ProcureLens takes public procurement contract data (EU TED format, CSV/Excel), normalises it,
+predicts the expected contract value with a Random Forest model and flags contracts whose actual
+value deviates strongly from the prediction.
+
 ---
 
 ## System Architecture
@@ -19,64 +23,66 @@ Cardiff Metropolitan University · IST5001 · 2025/2026
     │  REST API   │ requests  │  6-tab UI    │
     └──────┬──────┘           └──────────────┘
            │
-    ┌──────▼──────┐    ┌──────────────┐
-    │ PostgreSQL  │    │   REDIS      │
-    │   :5432     │    │   :6379      │
-    │  Database   │    │  Celery Broker│
-    └─────────────┘    └──────────────┘
+    ┌──────▼──────┐    ┌───────────────┐
+    │ PostgreSQL  │    │   REDIS       │
+    │   :5432     │    │   :6379       │
+    │  Database   │    │ Celery Broker │
+    └─────────────┘    └───────────────┘
 ```
-
----
-
-## ⚠️ BEFORE YOU START: Save Your RF Model
-
-In your Jupyter notebook, run:
-```python
-import pickle, os
-os.makedirs('models', exist_ok=True)
-pickle.dump(rf_model, open('models/rf_model.pkl', 'wb'))
-```
-
-Then copy `rf_model.pkl` into:
-```
-procurelens/frontend/models/rf_model.pkl
-```
-
-**Without this file the app runs in DEMO MODE** (still works, uses country baselines).
 
 ---
 
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone or unzip the project
-cd procurelens
+# 1. Clone
+git clone https://github.com/anna-hlinska-data/procureLens.git
+cd procureLens
 
-# 2. Start everything
+# 2. Configure environment
+cp backend/.env.example backend/.env
+#    fill in SECRET_KEY, POSTGRES_PASSWORD (also inside DATABASE_URL)
+#    and DJANGO_SUPERUSER_PASSWORD
+
+# 3. Add the trained model (see below)
+
+# 4. Start everything
 docker-compose up --build
-
-# 3. Open the app
-# Streamlit UI:  http://localhost
-# Django API:    http://localhost/api/docs/
-# Django Admin:  http://localhost/admin/
 ```
 
-**Default admin login:**
-- Email: `admin@procurelens.com`
-- Password: `admin123`
+| Service | URL |
+|---------|-----|
+| Streamlit UI | http://localhost |
+| API docs (Swagger) | http://localhost/api/docs/ |
+| Django Admin | http://localhost/admin/ |
+
+The admin account is created on first start from `DJANGO_SUPERUSER_EMAIL` /
+`DJANGO_SUPERUSER_PASSWORD` in `backend/.env`.
+
+### Model file
+
+The trained Random Forest model (`rf_model.pkl`, ~12 MB) is not stored in git.
+Download it from the [Releases](https://github.com/anna-hlinska-data/procureLens/releases) page
+and put it into:
+
+```
+frontend/models/rf_model.pkl
+```
+
+**Without this file the app runs in DEMO MODE** (still works, uses country baselines).
 
 ---
 
 ## 📁 Project Structure
 
 ```
-procurelens/
+procureLens/
 ├── docker-compose.yml          ← Start everything here
 │
 ├── backend/                    ← Django REST API
-│   ├── wfmonit/                ← Django settings
-│   ├── authentication/         ← User auth (JWT) ✅ ready
-│   ├── procurement/            ← Risk analysis API 🆕
+│   ├── procurelens/            ← Django settings, urls, celery
+│   ├── authentication/         ← User auth (JWT)
+│   ├── procurement/            ← Risk analysis API
 │   │   ├── models.py           ← ContractAnalysis, ContractResult
 │   │   ├── views.py            ← upload, list, get endpoints
 │   │   ├── serializers.py
@@ -85,22 +91,26 @@ procurelens/
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   ├── entrypoint.sh
-│   └── .env                    ← ⚠️ Edit email settings
+│   └── .env.example            ← Copy to .env
 │
 ├── frontend/                   ← Streamlit UI
-│   ├── app.py                  ← Main app (6 tabs) ✅
-│   ├── risk_engine.py          ← ML risk scoring 🆕
-│   ├── mapping.py              ← Column mapping ✅
-│   ├── cleaning.py             ← Data cleaning ✅
-│   ├── csv_converter.py        ← Format conversion ✅
-│   ├── models/
-│   │   └── rf_model.pkl        ← ⚠️ Copy from Jupyter
+│   ├── app.py                  ← Main app (6 tabs)
+│   ├── csv_converter.py        ← Format conversion (CSV, Excel, PDF)
+│   ├── mapping.py              ← Fuzzy column mapping
+│   ├── cleaning.py             ← Data cleaning
+│   ├── risk_engine.py          ← ML risk scoring
+│   ├── models/                 ← rf_model.pkl (download separately)
 │   ├── requirements.txt
 │   └── Dockerfile
+│
+├── samples/                    ← Example TED contract files
 │
 └── nginx/
     └── nginx.conf              ← Reverse proxy config
 ```
+
+Folders `frontend/input_files`, `original_files`, `converted_csv`, `mapped_files` and
+`cleaned_files` are created at runtime by the pipeline and are not tracked in git.
 
 ---
 
@@ -135,39 +145,13 @@ Risk Score = |actual_value - predicted_value| / predicted_value
 ## Useful Commands
 
 ```bash
-# Start all services
-docker-compose up --build
-
-# Stop all services
-docker-compose down
-
-# View logs
-docker-compose logs -f backend
-docker-compose logs -f frontend
-
-# Run Django shell
-docker-compose exec backend python manage.py shell
-
-# Run migrations manually
-docker-compose exec backend python manage.py migrate
-
-# Run tests (Mohammad)
-docker-compose exec backend python manage.py test
-docker-compose exec backend pytest tests/
-
-# Restart single service
-docker-compose restart backend
-docker-compose restart frontend
+docker-compose up --build                              # start all services
+docker-compose down                                    # stop all services
+docker-compose logs -f backend                         # follow backend logs
+docker-compose exec backend python manage.py shell     # Django shell
+docker-compose exec backend python manage.py migrate   # run migrations
+docker-compose exec backend python manage.py test      # run tests
 ```
-
----
-
-## Team
-
-| Name | Role |
-|------|------|
-| **Anna Hlinska** | ML research · risk_engine.py · Streamlit UI · Django procurement app |
-| **Mohammad Ishtiaque Hossain** | Testing · Docker · CI/CD · Deployment |
 
 ---
 
@@ -177,3 +161,9 @@ docker-compose restart frontend
 - **Model:** Random Forest — CV R²=0.2795, Test R²=0.2613
 - **Top predictor:** Country of origin (24.39% importance)
 - **Publication:** IJACSA paper (accepted)
+
+---
+
+## Author
+
+**Anna Hlinska** — [github.com/anna-hlinska-data](https://github.com/anna-hlinska-data)

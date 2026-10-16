@@ -1,0 +1,11 @@
+contract_id,country,sector,actual_value,num_offers,year,month,lot_number,vendor_id
+TED-2024-001,IT,Infrastructure,12400000,2,2024,3,1,
+TED-2024-002,FR,Medical Equipment,542000,5,2024,4,1,V-FR-442
+TED-2024-003,PL,IT Services,89000,8,2024,5,2,V-PL-891
+TED-2024-004,DE,Construction,3200000,4,2024,6,1,V-DE-223
+TED-2024-005,GR,Consulting,780000,1,2024,7,3,
+TED-2024-006,RO,Healthcare,450000,3,2024,8,1,V-RO-117
+TED-2024-007,HU,IT Services,95000,6,2024,9,1,V-HU-334
+TED-2024-008,BG,Infrastructure,8900000,1,2024,10,2,
+TED-2024-009,ES,Education,234000,7,2024,11,1,V-ES-556
+TED-2024-010,CZ,Medical Equipment,1100000,2,2024,12,1,

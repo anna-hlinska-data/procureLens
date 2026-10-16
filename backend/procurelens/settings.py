@@ -72,22 +72,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'procurelens.wsgi.application'
 
-# Database
-if config('DATABASE_URL', default=None):
-    DATABASES = {
-        'default': dj_database_url.parse(config('DATABASE_URL'))
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'procurelens_db',
-            'USER': 'postgres',
-            'PASSWORD': 'REMOVED_DB_PASSWORD',
-            'HOST': 'localhost',
-            'PORT': '5433',
-        }
-    }
+# Database (credentials come only from DATABASE_URL in .env)
+DATABASES = {
+    'default': dj_database_url.parse(
+        config('DATABASE_URL', default='postgresql://postgres@localhost:5433/procurelens_db')
+    )
+}
 
 # Cache configuration with Redis
 CACHES = {
