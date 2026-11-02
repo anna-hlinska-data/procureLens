@@ -2,9 +2,35 @@
 **AI-Powered Procurement Risk Detection System**
 Cardiff Metropolitan University · IST5001 · 2025/2026
 
-ProcureLens takes public procurement contract data (EU TED format, CSV/Excel), normalises it,
-predicts the expected contract value with a Random Forest model and flags contracts whose actual
-value deviates strongly from the prediction.
+## The problem
+
+The EU publishes millions of public contract awards, but no one can check them all by hand.
+Overpriced or incomplete contracts get lost among the normal ones, and the data comes in
+inconsistent files that need cleaning before anyone can analyse them.
+
+## Who it's for
+
+Procurement analysts, public-sector auditors, anti-corruption researchers and data
+journalists who need to decide which contracts to examine first.
+
+## What it does
+
+Upload a contract file (CSV, Excel or PDF). ProcureLens maps it to a standard schema,
+predicts the expected contract value with a Random Forest model and scores how far the actual
+value is from that prediction. Each contract is labelled 🔴 high, 🟡 medium or 🟢 low risk, so
+reviewers can start with a short list of red flags instead of the whole dataset.
+
+## Key findings
+
+- **10,038,018 contracts** from EU TED (2006–2025) used for the research behind the model.
+- **Country is the strongest predictor of contract value** (24.39% of feature importance), more
+  than the type or category of the contract.
+- **Test R² = 0.26** (CV R² = 0.28): published fields explain only about a quarter of the
+  variation in contract value. That is why ProcureLens is a triage tool that points reviewers to
+  outliers, not an automatic verdict.
+- Research **accepted for publication in IJACSA**.
+
+**Stack:** Python, scikit-learn, Django REST, Streamlit, PostgreSQL, Celery/Redis, Docker, NGINX
 
 ---
 
